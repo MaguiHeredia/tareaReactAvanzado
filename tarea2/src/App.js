@@ -1,35 +1,46 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import useList from './hooks/useList';
 import './App.css';
-import { withServiceWorkerUpdater } from '@3m1/service-worker-updater';
 
 
-const App = (props) => {
-  const { newServiceWorkerDetected, onLoadNewServiceWorkerAccept } = props;
+const App = () => {
+  const tasks = useList([])
+  const [newTask, setNewTask] = useState('')
 
-  const [newItem, setNewItem] = React.useState("");
-  const [items, setItems] = React.useState([]);
-
-  const addNewItem = () => {
-    setItems([...items, newItem]);
-    setNewItem("");
+  const handleSubmit = (ev) => {
+    ev.preventDefault()
+    tasks.push(newTask)
+    setNewTask('')
   }
+
+  const handleChange = (ev) => {
+    setNewTask(ev.target.value)
+  } 
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>** Proyecto PWA - Lista de la compra v8 **</h1>
-        {newServiceWorkerDetected && <div style={{ backgroundColor: 'red', marginBottom: 20 }}>
-          <h3>¡Nueva actualización! ¿Quieres actualizar?</h3>
-          <button onClick={onLoadNewServiceWorkerAccept}>¡Actualizar!</button>
-        </div>}
-        <input style={{ fontSize: 24 }} type="text" onKeyPress={e => e.key === 'Enter' && addNewItem()} onChange={e => setNewItem(e.target.value)} value={newItem} />
-        <button style={{ fontSize: 24 }} onClick={addNewItem}>Añadir</button>
-        <ul>
-          {items.map((item, key) => <li key={key}>{item}</li>)}
-        </ul>
-      </header>
+      <h1>Task List</h1>
+      <form onSubmit={handleSubmit}>
+        <input type='text' onChange={(ev) => handleChange(ev)} placeholder='new task' value={newTask}></input>
+       <button type='submit'> create Task</button>
+      </form>
+      {tasks.isEmpty() ? <p> Task list is empty</p>
+      : <ul>
+        <button onClick={() => tasks.reset()}>Reset List</button>
+        <button onClick={() => tasks.sort()}>Sort List</button>
+        <button onClick={() => tasks.reverse()}>Reverse List</button>
+        {tasks.value.map((task, index) => {
+          return (
+            <li>
+              {task}
+              <button onClick={() => tasks.remove(index)}>x</button>
+            </li>
+          )
+        })}
+      </ul>
+    }
     </div>
   );
 }
 
-export default withServiceWorkerUpdater(App);
+export default App;
